@@ -14,6 +14,9 @@ sudo -v
 # Keep-alive: update existing `sudo` time stamp until the script has finished.
 while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
+
+
+
 # Ask if the user wants to set up the workstation prefs
 echo -n "Setup general workstation preferences? [y/n]: "
 read -n 1 generalsetup
@@ -58,13 +61,15 @@ else
   echo "[!] Skipping workstation setup..."
 fi
 
+
+
+
 # Ask if the user wants to set up the workstation prefs
 echo -n "Setup TBE & PowerTerm? [y/n]: "
 read -n 1 tbesetup
 echo ""
 
 if [ "$tbesetup" == "y" ]; then
-
   # Patch TBE4
   echo "[ ] Checking for TBE4 on this computer..."
   if [ -e /Applications/The\ Business\ Edge.app/Contents/Resources/app.nw/bin/scanimage.php ]; then
