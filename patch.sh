@@ -31,11 +31,21 @@ if [ "$generalsetup" == "y" ]; then
   sudo /usr/bin/defaults write "/System/Library/User Template/English.lproj/Library/Preferences/com.apple.screensaver" askForPasswordDelay -string 60
   sudo /usr/bin/defaults write "/System/Library/User Template/English.lproj/Library/Preferences/com.apple.screensaver" askForPassword -int 1
 
+  # Check for scanline
+  if [ ! -e /usr/local/bin/scanline ]; then
+    echo "[ ] Installing scanline command-line scanning utility..."
+    sudo curl -fsSL http://github.com/neallober/tbeconfigs/raw/master/Utils/scanline > /tmp/scanline
+    sudo chmod 755 /tmp/scanline
+    sudo mv /tmp/scanline /usr/local/bin/scanline
+  else
+    echo "[ ] Scanline command-line scanning utility already installed."
+  fi
+
   # Check for brew
   if hash brew 2>/dev/null; then
     echo "[ ] brew utility already installed on this computer."
   else
-    echo "[ ] Installing brew."
+    echo "[ ] Installing brew..."
     ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
   fi
 
