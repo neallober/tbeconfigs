@@ -1,0 +1,3 @@
+set mouse-control off
+set disable-exit-active-session off
+exec logger test

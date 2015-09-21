@@ -1,0 +1,1 @@
+exec tbe_script.rb "$p1"

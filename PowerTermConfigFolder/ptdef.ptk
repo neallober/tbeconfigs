@@ -1,0 +1,13 @@
+set keyboard-locale "English (United States)"
+key numlock send del
+key numpad7 send numpad7
+key numpad8 send numpad8
+key numpad9 send numpad9
+key numpad4 send numpad4
+key numpad5 send numpad5
+key numpad6 send numpad6
+key numpad1 send numpad1
+key numpad2 send numpad2
+key numpad3 send numpad3
+key numpad0 send numpad0
+key decimal send decimal

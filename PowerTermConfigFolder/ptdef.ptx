@@ -1,0 +1,13 @@
+
+[]
+comm-type = com
+baud-rate = 9600
+parity = 8/none
+stop-bits = 1
+flow-control = xonxoff
+serial-device-name = 
+phone-number = 
+terminal-type = vt52
+terminal-model = vt100
+login-command-file = 
+terminal-setup-file = 

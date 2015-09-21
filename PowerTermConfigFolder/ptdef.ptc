@@ -1,0 +1,11 @@
+
+[Allied Cloud Server]
+comm-type = telnet
+host-name = 10.0.1.100
+terminal-id = 
+set-window-size = true
+security-type = unsecured
+terminal-type = sco-ansi
+terminal-model = vt100
+login-command-file = 
+terminal-setup-file = 
