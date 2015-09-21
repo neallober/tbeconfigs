@@ -40,15 +40,39 @@ if [ "$generalsetup" == "y" ]; then
   fi
 
   if hash convert 2>/dev/null; then
-    echo "[ ] ImageMagick is not installed. Installing now."
+    echo "[ ] ImageMagick is already installed."
   else
+    echo "[ ] Installing ImageMagick via brew now..."
     brew install imagemagick
   fi
 
-  echo "[ ] Installing via brew: mtr, speedtest-cli, and ssh-copy-id."
-  brew install mtr
-  brew install speedtest-cli
-  brew install ssh-copy-id
+  if hash mtr 2>/dev/null; then
+    echo "[ ] mtr is already installed."
+  else
+    echo "[ ] Installing mtr via brew now..."
+    brew install mtr
+  fi
+
+  if hash speedtest-cli 2>/dev/null; then
+    echo "[ ] speedtest-cli is already installed."
+  else
+    echo "[ ] Installing speedtest-cli via brew now..."
+    brew install speedtest-cli
+  fi
+
+  if hash ssh-copy-id 2>/dev/null; then
+    echo "[ ] ssh-copy-id is already installed."
+  else
+    echo "[ ] Installing ssh-copy-id via brew now..."
+    brew install ssh-copy-id
+  fi
+
+  if hash archey 2>/dev/null; then
+    echo "[ ] archey is already installed."
+  else
+    echo "[ ] Installing archey via brew now..."
+    brew install archey
+  fi
 
   echo "[ ] Updating brew and upgrading all librarires."
   brew update
@@ -113,6 +137,21 @@ echo ""
 if [ "$tbesetup" == "y" ]; then
   # Patch TBE4
   echo "[ ] Checking for TBE4 on this computer..."
+  if [ ! -e /Applications/The\ Business\ Edge.app/Contents/Resources/app.nw/bin/scanimage.php ]; then
+    echo -n "[ ] TBE4 not detected on this computer. Install now? [y/n]: "
+    read -n 1 install_tbe
+    echo ""
+    if [ "$install_tbe" == "y" ]; then
+      echo "[ ] Downloading TBE4 now. Please wait..."
+      curl -L# http://10.0.1.100/tbe4/tbe4.dmg > /tmp/tbe4.dmg
+      echo "[ ] Opening .dmg file. Press enter when TBE4 dragged into Applications folder. [Enter]: "
+      open /tmp/tbe4.dmg
+      read -n 1 key
+    else
+      echo "[!] Skipping TBE4 download & installation."
+    fi
+  fi
+
   if [ -e /Applications/The\ Business\ Edge.app/Contents/Resources/app.nw/bin/scanimage.php ]; then
     echo "[+] TBE4 found! Patching now..."
     sudo curl -fsSL http://github.com/neallober/tbeconfigs/blob/master/TBE4/detect_blank_page.sh > /tmp/detect_blank_page.sh

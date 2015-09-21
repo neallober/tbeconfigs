@@ -174,7 +174,7 @@ if message_from_server.include? ".bsm"
 
   # Run the scanline command to get the image
   #log_info "Running the scanline command now"
-  run_and_log "scanline -duplex -scanner \"EPSON DS-510\" -dir /tmp -resolution 150 -name lastscan -jpeg"
+  run_and_log "/usr/local/bin/scanline -duplex -scanner \"EPSON DS-510\" -dir /tmp -resolution 150 -name lastscan -jpeg"
 
   die_if_file_missing("/tmp/lastscan.jpg")
 
