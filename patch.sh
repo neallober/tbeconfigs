@@ -30,6 +30,30 @@ if [ "$generalsetup" == "y" ]; then
   echo "[ ] Setting screensaver settings..."
   sudo /usr/bin/defaults write "/System/Library/User Template/English.lproj/Library/Preferences/com.apple.screensaver" askForPasswordDelay -string 60
   sudo /usr/bin/defaults write "/System/Library/User Template/English.lproj/Library/Preferences/com.apple.screensaver" askForPassword -int 1
+
+  # Check for brew
+  if hash brew 2>/dev/null; then
+    echo "[ ] brew utility already installed on this computer."
+  else
+    echo "[ ] Installing brew."
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+  fi
+
+  if hash convert 2>/dev/null; then
+    echo "[ ] ImageMagick is not installed. Installing now."
+  else
+    brew install imagemagick
+  fi
+
+  echo "[ ] Installing via brew: mtr, speedtest-cli, and ssh-copy-id."
+  brew install mtr
+  brew install speedtest-cli
+  brew install ssh-copy-id
+
+  echo "[ ] Updating brew and upgrading all librarires."
+  brew update
+  brew upgrade
+
 else
   echo "[!] Skipping workstation setup..."
 fi
@@ -83,6 +107,30 @@ if [ "$tbesetup" == "y" ]; then
     curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/ptdef.pts    > $HOME/PowerTermConfigFolder/ptdef.pts
     curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/ptdef.ptx    > $HOME/PowerTermConfigFolder/ptdef.ptx
     curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/tbe.psl      > $HOME/PowerTermConfigFolder/tbe.psl
+
+    # Download tbe_script.rb and put it in /usr/local/bin
+    curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/tbe_script.rb > /usr/local/bin/tbe_script.rb
+    sudo chmod 755 /usr/local/bin/tbe_script.rb
+
+    # Check for the scan log file
+    if [ -e /var/log/tbe_script.log ]; then
+      echo "[ ] /var/log/tbe_script.log exists."
+    else
+      sudo touch /var/log/tbe_script.log
+      sudo chmod 777 /var/log/tbe_script.log
+      echo "[ ] Created /var/log/tbe_script.log and set permissions to 777"
+    fi
+
+    if [ -e $HOME/.ssh/id_rsa.pub ]; then
+      echo "[ ] User has already created a public key."
+    else
+      echo "[ ] Creating a public key..."
+      # Create a public key for this user
+      ssh-keygen -t rsa
+      echo "[ ] Exchanging public key with server..."
+      # Exchange the key with the server
+      ssh-copy-id -i $HOME/.ssh/id_rsa.pub scanuser@10.0.1.100
+    fi
 
     echo "[ ] PowerTerm configuration complete."
   fi

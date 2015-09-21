@@ -18,7 +18,7 @@ def log_info(message)
   cmd_to_run = "logger " + msg_to_log + " #Developer #Comment"
   `#{cmd_to_run}`
   msg_to_log = msg_to_log + "\n"
-  File.open("/var/log/scan.log","a") { |f| f.write(msg_to_log) }
+  File.open("/var/log/tbe_script.log","a") { |f| f.write(msg_to_log) }
 end
 
 # Used to run a command and log the *return value*
