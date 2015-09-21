@@ -13,9 +13,52 @@ while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 
 
 
+# Ask if we want to create a new user for this workstation
+echo -n "[?] Do you want to create a new local user for this machine? [y/n]: "
+read -n 1 createlocaluser
+echo ""
+if [ "$createlocaluser" == "y" ]; then
+  # Prompt the user to enter the new user's information
+  read -p "[?] Enter the desired local username: " NEWUSERNAME
+  read -p "[?] Enter a full name for this user: " NEWUSERFULLNAME
+  read -s -p "[?] Enter a password for this user: " NEWUSERPASSWORD
+  echo
+  read -s -p "[?] Verify password: " NEWUSERPASSWORDVERIFY
+  echo
+
+  # Verify that the password and password validation match
+  if [[ $NEWUSERPASSWORD != $NEWUSERPASSWORDVERIFY ]]; then
+    echo "[!] Error: passwords do not match. Exiting."
+    exit 1;
+  fi
+
+  # Find the next available user ID
+  MAXID=$(dscl . -list /Users UniqueID | awk '{print $2}' | sort -ug | tail -1)
+
+  echo "[ ] Creating user $NEWUSERNAME for $NEWUSERFULLNAME (ID $MAXID+1)..."
+  sudo dscl . -create /Users/$NEWUSERNAME
+  sudo dscl . -create /Users/$NEWUSERNAME UserShell /bin/bash
+  sudo dscl . -create /Users/$NEWUSERNAME Realname "$NEWUSERFULLNAME"
+  sudo dscl . -create /Users/$NEWUSERNAME UniqueID $((MAXID+1))
+  sudo dscl . -create /Users/$NEWUSERNAME PrimaryGroupID 1000
+  sudo dscl . -create /Users/$NEWUSERNAME NFSHomeDirectory /Users/$NEWUSERNAME
+  sudo dscl . -passwd /Users/$NEWUSERNAME $NEWUSERPASSWORD
+
+  # Set up the new user's home directory
+  sudo createhomedir -c 2>&1 | grep -v "shell-init"
+  sudo chown -R $NEWUSERNAME /Users/$NEWUSERNAME
+
+  # Let the user know we are done creating the local account
+  echo "[ ] Done creating local user account."
+else # end of create local users section
+  echo "[ ] Skipping user creation."
+fi # end of create local users
+
+
+
 
 # Ask if the user wants to set up the workstation prefs
-echo -n "Setup general workstation preferences? [y/n]: "
+echo -n "[?] Setup general workstation preferences? [y/n]: "
 read -n 1 generalsetup
 echo ""
 
@@ -140,7 +183,7 @@ fi
 
 
 # Ask if the user wants to set up the workstation prefs
-echo -n "Setup TBE & PowerTerm? [y/n]: "
+echo -n "[?] Setup TBE & PowerTerm? [y/n]: "
 read -n 1 tbesetup
 echo ""
 
@@ -148,7 +191,7 @@ if [ "$tbesetup" == "y" ]; then
   # Patch TBE4
   echo "[ ] Checking for TBE4 on this computer..."
   if [ ! -e /Applications/The\ Business\ Edge.app/Contents/Resources/app.nw/bin/scanimage.php ]; then
-    echo -n "[ ] TBE4 not detected on this computer. Install now? [y/n]: "
+    echo -n "[?] TBE4 not detected on this computer. Install now? [y/n]: "
     read -n 1 install_tbe
     echo ""
     if [ "$install_tbe" == "y" ]; then
@@ -158,7 +201,7 @@ if [ "$tbesetup" == "y" ]; then
       open /tmp/tbe4.dmg
       read -n 1 key
     else
-      echo "[!] Skipping TBE4 download & installation."
+      echo "[!] Skipping TBE4 download & installation..."
     fi
   fi
 
@@ -185,7 +228,8 @@ if [ "$tbesetup" == "y" ]; then
       		if [ ! -d "${USER_HOME}"/PowerTermConfigFolder ]; then
             echo "[ ] PowerTermConfigFolder does not exist at ${USER_HOME}/PowerTermConfigFolder. Creating directory now."
       			sudo mkdir -p "${USER_HOME}"/PowerTermConfigFolder
-      			sudo chown "${USER_UID}" "${USER_HOME}"/PowerTermConfigFolder
+            sudo chmod 777 "${USER_HOME}"/PowerTermConfigFolder
+            sudo chown "${USER_UID}" "${USER_HOME}"/PowerTermConfigFolder
           else
             echo "[ ] PowerTermConfigFolder exists at ${USER_HOME}/PowerTermConfigFolder"
       		fi
@@ -241,21 +285,22 @@ if [ "$tbesetup" == "y" ]; then
       echo "[ ] Created /var/log/tbe_script.log and set permissions to 777"
     fi
 
+    # Make sure that the ssh keys have been exhanged.
     if [ -e $HOME/.ssh/id_rsa.pub ]; then
-      echo "[ ] User has already created a public key. Assuming it has already been exchanged."
+      echo "[ ] User has already created a public key. Making sure that it matches what's on the server."
     else
-      echo "[ ] Creating a public key..."
+      echo "[ ] Creating a public key. Please press Enter at the prompts..."
       # Create a public key for this user
       ssh-keygen -t rsa
-      echo "[ ] Exchanging public key with server..."
-      # Exchange the key with the server
-      ssh-copy-id -i $HOME/.ssh/id_rsa.pub scanuser@10.0.1.100
     fi
+    echo "[ ] Exchanging public key with server..."
+    # Exchange the key with the server
+    ssh-copy-id -i $HOME/.ssh/id_rsa.pub scanuser@10.0.1.100
 
     echo "[ ] PowerTerm configuration complete."
   fi
 else
-  echo "[!] Skipping TBE4 & PowerTerm setup."
+  echo "[!] Skipping TBE4 & PowerTerm setup..."
 fi
 
 
