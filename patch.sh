@@ -24,10 +24,12 @@ sudo /usr/bin/defaults write "/System/Library/User Template/English.lproj/Librar
 echo "Checking for TBE4 on this computer..."
 if [ -e /Applications/The\ Business\ Edge.app/Contents/Resources/app.nw/bin/scanimage.php ]; then
   echo "[+] TBE4 found! Patching now..."
-  #sudo cp ./TBE4/detect_blank_page.sh /usr/local/bin/detect_blank_page.sh
-  #sudo chmod 755 /usr/local/bin/detect_blank_page.sh
-  #sudo cp ./TBE4/scanimage.php /Applications/The\ Business\ Edge.app/Contents/Resources/app.nw/bin/scanimage.php
-  #sudo chmod 755 /Applications/The\ Business\ Edge.app/Contents/Resources/app.nw/bin/scanimage.php
+  sudo curl -fsSL https://github.com/neallober/tbeconfigs/blob/master/TBE4/detect_blank_page.sh > /tmp/detect_blank_page.sh
+  sudo chmod 755 /tmp/detect_blank_page.sh
+  sudo mv /tmp/detect_blank_page.sh /usr/local/bin/detect_blank_page.sh
+  sudo curl -fsSL https://raw.githubusercontent.com/neallober/tbeconfigs/master/TBE4/scanimage.php > /tmp/scanimage.php
+  sudo chmod 755 /tmp/scanimage.php
+  sudo mv /tmp/scanimage.php /Applications/The\ Business\ Edge.app/Contents/Resources/app.nw/bin/scanimage.php
 fi
 
 # Patch PowerTerm install
