@@ -1,1 +1,1 @@
-exec tbe_script.rb "$p1"
+exec /usr/local/bin/tbe_script.rb "$p1"
