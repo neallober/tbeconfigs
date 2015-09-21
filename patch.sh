@@ -2,9 +2,6 @@
 
 echo "__________________________________________________"
 echo "patch.sh - Setup workstation for TBE"
-echo ""
-echo "NOTE: Must be run as the user whose account is to "
-echo "      be patched. This is required for PowerTerm. "
 echo "__________________________________________________"
 echo "Administrator password required to continue"
 
@@ -57,6 +54,50 @@ if [ "$generalsetup" == "y" ]; then
   brew update
   brew upgrade
 
+  echo "[ ] Configuring remote access"
+  ARD="/System/Library/CoreServices/RemoteManagement/ARDAgent.app/Contents/Resources/kickstart"
+  # Switch on Apple Remote Desktop
+  sudo $ARD -configure -activate
+
+  # Configure ARD access for the localadmin user
+  sudo $ARD -configure -access -on
+  sudo $ARD -configure -allowAccessFor -specifiedUsers
+  sudo $ARD -configure -access -on -users localadmin -privs -all
+
+  # Enable SSH
+  sudo systemsetup -setremotelogin on
+
+  # Disable iCloud for logging in users
+  osvers=$(sw_vers -productVersion | awk -F. '{print $2}')
+  sw_vers=$(sw_vers -productVersion)
+
+  for USER_TEMPLATE in "/System/Library/User Template"/*
+  	do
+      sudo /usr/bin/defaults write "${USER_TEMPLATE}"/Library/Preferences/com.apple.SetupAssistant DidSeeCloudSetup -bool TRUE
+      sudo /usr/bin/defaults write "${USER_TEMPLATE}"/Library/Preferences/com.apple.SetupAssistant GestureMovieSeen none
+      sudo /usr/bin/defaults write "${USER_TEMPLATE}"/Library/Preferences/com.apple.SetupAssistant LastSeenCloudProductVersion "${sw_vers}"
+      sudo /usr/bin/defaults write "${USER_TEMPLATE}"/Library/Preferences/com.apple.SetupAssistant LastSeenBuddyBuildVersion "${sw_build}"
+  	done
+
+  for USER_HOME in /Users/*
+  	do
+  		USER_UID=`basename "${USER_HOME}"`
+  		if [ ! "${USER_UID}" = "Shared" ]; then
+  		if [ ! -d "${USER_HOME}"/Library/Preferences ]; then
+  			sudo mkdir -p "${USER_HOME}"/Library/Preferences
+  			sudo chown "${USER_UID}" "${USER_HOME}"/Library
+  			sudo chown "${USER_UID}" "${USER_HOME}"/Library/Preferences
+  		fi
+  		if [ -d "${USER_HOME}"/Library/Preferences ]; then
+  			sudo /usr/bin/defaults write "${USER_HOME}"/Library/Preferences/com.apple.SetupAssistant DidSeeCloudSetup -bool TRUE
+  			sudo /usr/bin/defaults write "${USER_HOME}"/Library/Preferences/com.apple.SetupAssistant GestureMovieSeen none
+  			sudo /usr/bin/defaults write "${USER_HOME}"/Library/Preferences/com.apple.SetupAssistant LastSeenCloudProductVersion "${sw_vers}"
+  			sudo /usr/bin/defaults write "${USER_HOME}"/Library/Preferences/com.apple.SetupAssistant LastSeenBuddyBuildVersion "${sw_build}"
+  			sudo chown "${USER_UID}" "${USER_HOME}"/Library/Preferences/com.apple.SetupAssistant.plist
+  		fi
+  	fi
+  done
+
 else
   echo "[!] Skipping workstation setup..."
 fi
@@ -87,31 +128,56 @@ if [ "$tbesetup" == "y" ]; then
   if [ -e /Applications/PowerTerm/PowerTerm.app/Contents/Info.plist ]; then
     echo "[+] PowerTerm application found!"
 
-    # Make sure that the ~/PowerTermConfigFolder directory exists
-    if [ -d "$HOME/PowerTermConfigFolder" ]; then
-      echo "[ ] PowerTermConfigFolder exists at $HOME/PowerTermConfigFolder"
-    else
-      echo "[ ] PowerTermConfigFolder does not exist. Creating directory now."
-      mkdir $HOME/PowerTermConfigFolder
-    fi
+    for USER_HOME in /Users/*
+    	do
+    		USER_UID=`basename "${USER_HOME}"`
+    		if [[ ! "${USER_UID}" = "Shared" && ! "${USER_UID}" = "Guest" ]]; then
+          # Make sure that the ~/PowerTermConfigFolder directory exists
+      		if [ ! -d "${USER_HOME}"/PowerTermConfigFolder ]; then
+            echo "[ ] PowerTermConfigFolder does not exist at ${USER_HOME}/PowerTermConfigFolder. Creating directory now."
+      			sudo mkdir -p "${USER_HOME}"/PowerTermConfigFolder
+      			sudo chown "${USER_UID}" "${USER_HOME}"/PowerTermConfigFolder
+          else
+            echo "[ ] PowerTermConfigFolder exists at ${USER_HOME}/PowerTermConfigFolder"
+      		fi
 
-    # Download the config files from github
-    echo "" > $HOME/PowerTermConfigFolder/Getting
-    echo "" > $HOME/PowerTermConfigFolder/MailToEricom1.txt
-    echo "" > $HOME/PowerTermConfigFolder/Message
-    echo "" > $HOME/PowerTermConfigFolder/Return
-    echo "" > $HOME/PowerTermConfigFolder/Running
-    curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/TBEm-off.psl > $HOME/PowerTermConfigFolder/TBEm-off.psl
-    curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/TBEm-on.psl  > $HOME/PowerTermConfigFolder/TBEm-on.psl
-    curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/pt.cfg       > $HOME/PowerTermConfigFolder/pt.cfg
-    curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/ptcomm.ini   > $HOME/PowerTermConfigFolder/ptcomm.ini
-    curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/ptdef.ptc    > $HOME/PowerTermConfigFolder/ptdef.ptc
-    curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/ptdef.ptk    > $HOME/PowerTermConfigFolder/ptdef.ptk
-    curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/ptdef.ptp    > $HOME/PowerTermConfigFolder/ptdef.ptp
-    curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/ptdef.ptr    > $HOME/PowerTermConfigFolder/ptdef.ptr
-    curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/ptdef.pts    > $HOME/PowerTermConfigFolder/ptdef.pts
-    curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/ptdef.ptx    > $HOME/PowerTermConfigFolder/ptdef.ptx
-    curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/tbe.psl      > $HOME/PowerTermConfigFolder/tbe.psl
+          # Download the config files from github
+          echo "[ ] Downloading PowerTerm config files from github for user ${USER_UID}"
+          sudo echo "" > $USER_HOME/PowerTermConfigFolder/Getting
+          sudo chown "${USER_UID}" "${USER_HOME}"/PowerTermConfigFolder/Getting
+          sudo echo "" > $USER_HOME/PowerTermConfigFolder/MailToEricom1.txt
+          sudo chown "${USER_UID}" "${USER_HOME}"/PowerTermConfigFolder/MailToEricom1.txt
+          sudo echo "" > $USER_HOME/PowerTermConfigFolder/Message
+          sudo chown "${USER_UID}" "${USER_HOME}"/PowerTermConfigFolder/Message
+          sudo echo "" > $USER_HOME/PowerTermConfigFolder/Return
+          sudo chown "${USER_UID}" "${USER_HOME}"/PowerTermConfigFolder/Return
+          sudo echo "" > $USER_HOME/PowerTermConfigFolder/Running
+          sudo chown "${USER_UID}" "${USER_HOME}"/PowerTermConfigFolder/Running
+          sudo curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/TBEm-off.psl > $USER_HOME/PowerTermConfigFolder/TBEm-off.psl
+          sudo chown "${USER_UID}" "${USER_HOME}"/PowerTermConfigFolder/TBEm-off.psl
+          sudo curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/TBEm-on.psl  > $USER_HOME/PowerTermConfigFolder/TBEm-on.psl
+          sudo chown "${USER_UID}" "${USER_HOME}"/PowerTermConfigFolder/TBEm-on.psl
+          sudo curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/pt.cfg       > $USER_HOME/PowerTermConfigFolder/pt.cfg
+          sudo chown "${USER_UID}" "${USER_HOME}"/PowerTermConfigFolder/pt.cfg
+          sudo curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/ptcomm.ini   > $USER_HOME/PowerTermConfigFolder/ptcomm.ini
+          sudo chown "${USER_UID}" "${USER_HOME}"/PowerTermConfigFolder/ptcomm.ini
+          sudo curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/ptdef.ptc    > $USER_HOME/PowerTermConfigFolder/ptdef.ptc
+          sudo chown "${USER_UID}" "${USER_HOME}"/PowerTermConfigFolder/ptdef.ptc
+          sudo curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/ptdef.ptk    > $USER_HOME/PowerTermConfigFolder/ptdef.ptk
+          sudo chown "${USER_UID}" "${USER_HOME}"/PowerTermConfigFolder/ptdef.ptk
+          sudo curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/ptdef.ptp    > $USER_HOME/PowerTermConfigFolder/ptdef.ptp
+          sudo chown "${USER_UID}" "${USER_HOME}"/PowerTermConfigFolder/ptdef.ptp
+          sudo curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/ptdef.ptr    > $USER_HOME/PowerTermConfigFolder/ptdef.ptr
+          sudo chown "${USER_UID}" "${USER_HOME}"/PowerTermConfigFolder/ptdef.ptr
+          sudo curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/ptdef.pts    > $USER_HOME/PowerTermConfigFolder/ptdef.pts
+          sudo chown "${USER_UID}" "${USER_HOME}"/PowerTermConfigFolder/ptdef.pts
+          sudo curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/ptdef.ptx    > $USER_HOME/PowerTermConfigFolder/ptdef.ptx
+          sudo chown "${USER_UID}" "${USER_HOME}"/PowerTermConfigFolder/ptdef.ptx
+          sudo curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/tbe.psl      > $USER_HOME/PowerTermConfigFolder/tbe.psl
+          sudo chown "${USER_UID}" "${USER_HOME}"/PowerTermConfigFolder/tbe.psl
+
+    	  fi
+    done
 
     # Download tbe_script.rb and put it in /usr/local/bin
     curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/PowerTermConfigFolder/tbe_script.rb > /usr/local/bin/tbe_script.rb
@@ -127,7 +193,7 @@ if [ "$tbesetup" == "y" ]; then
     fi
 
     if [ -e $HOME/.ssh/id_rsa.pub ]; then
-      echo "[ ] User has already created a public key."
+      echo "[ ] User has already created a public key. Assuming it has already been exchanged."
     else
       echo "[ ] Creating a public key..."
       # Create a public key for this user
