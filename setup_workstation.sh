@@ -221,6 +221,7 @@ if [ "$tbesetup" == "y" ]; then
     echo "[+] PowerTerm application found!"
 
     # Get rid of unauthorized reporting / spyware from Ericom
+    echo "[ ] Blocking spyware traffic from Ericom"
     sudo echo "127.0.0.1          techsupport.ericom.com" >> /etc/hosts
 
     for USER_HOME in /Users/*
