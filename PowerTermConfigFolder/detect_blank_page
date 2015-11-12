@@ -7,7 +7,7 @@ for i in "$@"; do
         continue
     fi
 
-    histogram=$(/opt/local/bin/convert "${i}" -threshold 50% -format %c histogram:info:-)
+    histogram=$(/usr/local/bin/convert "${i}" -threshold 50% -format %c histogram:info:-)
     #echo $histogram
     white=$(echo "${histogram}" | grep "white" | cut -d: -f1)
     black=$(echo "${histogram}" | grep "black" | cut -d: -f1)

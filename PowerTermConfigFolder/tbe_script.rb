@@ -39,7 +39,7 @@ end
 # Check if a file exists, and die if it is missing
 def die_if_file_missing(filepath)
   if !File.exist? filepath
-    log_info "|-[ERROR]-> Unable to locate a file: ${filepath}.  Exiting."
+    log_info "|-[ERROR]-> Unable to locate a file: #{filepath}.  Exiting."
     exit
   end
 end
@@ -113,23 +113,20 @@ end # of function remove_blank_pages
 
 
 # --------------------------------------------------------------------
-# --------------------------------------------------------------------
-# --------------------------------------------------------------------
-# ------------  END OF FUNCTION DEFINITION SECTION  ------------------
-# --------------------------------------------------------------------
-# --------------------------------------------------------------------
-# --------------------------------------------------------------------
+
+
+
 
 
 # Grab the message from the server and exit if it is nil
 message_from_server = ARGV.first
 if message_from_server.nil?
-  log_info "|-[ERROR]-> ERROR: no data from server. Exiting."
+  log_info '|-[ERROR]-> ERROR: no data from server. Exiting.'
   exit
 end
 
 
-
+print "Scanner call\n"
 
 # --------------------------------------------------------------------
 # SCANNER CALL
@@ -191,7 +188,7 @@ if message_from_server.include? ".bsm"
   log_info "|----------------------------------------------"
   log_info "|-[INFO]-> Converting from .jpg to .tif with lzw compression"
   log_info "|----------------------------------------------"
-  run_and_log "/opt/local/bin/convert -compress lzw /tmp/lastscan*.jpg /tmp/lastscan.tif"
+  run_and_log "/usr/local/bin/convert -compress lzw /tmp/lastscan*.jpg /tmp/lastscan.tif"
   die_if_file_missing("/tmp/lastscan.tif")
 
   # Upload the file to the server
