@@ -101,7 +101,7 @@ def remove_blank_pages
 
   Dir.glob('/tmp/*.jpg').each do |file|
     log_info "|-[INFO]->[FUNCTION:remove_blank_pages]-> Evaluating #{file}\n"
-    result = `/usr/bin/detect_blank_page #{file}`
+    result = `/usr/local/bin/detect_blank_page #{file}`
     log_info "|-[INFO]->[FUNCTION:remove_blank_pages]-> Result: #{result}\n"
     if result.include? "blank"
       log_info "|-[INFO]-[FUNCTION:remove_blank_pages]-> Blank page detected. Removing file."
@@ -113,9 +113,12 @@ end # of function remove_blank_pages
 
 
 # --------------------------------------------------------------------
-
-
-
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+# ------------  END OF FUNCTION DEFINITION SECTION  ------------------
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
+# --------------------------------------------------------------------
 
 
 # Grab the message from the server and exit if it is nil
