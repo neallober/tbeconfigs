@@ -126,8 +126,6 @@ if message_from_server.nil?
 end
 
 
-print "Scanner call\n"
-
 # --------------------------------------------------------------------
 # SCANNER CALL
 # If we're passed a ".bsm" file, this means that this is a call to
@@ -136,6 +134,10 @@ print "Scanner call\n"
 if message_from_server.include? ".bsm"
   # Log and track the start time
   start_time = Time.now
+  log_info ""
+  log_info ""
+  log_info ""
+  log_info ""
   log_info "|=============================================="
   log_info "|-[INFO]-> Scan initiated at #{start_time.to_s}"
   log_info "|----------------------------------------------"
