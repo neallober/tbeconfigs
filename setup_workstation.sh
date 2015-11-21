@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "__________________________________________________"
-echo "patch.sh - Setup workstation for TBE"
+echo "setup_workstation.sh - Setup workstation for TBE"
 echo "__________________________________________________"
 echo "Administrator password required to continue"
 
