@@ -65,11 +65,15 @@ log_message("************************************************");
 
 # Check for missing packages / dependencies.
 if (!command_exist('/usr/local/bin/convert')) {
-    notifyuser("Missing ImageMagick","ImageMagick is not installed on this computer.");
+    notifyuser("Missing ImageMagick at /usr/local/bin","ImageMagick is not installed on this computer.");
     exit;
 }
 if (!command_exist('/usr/local/bin/scanline')) {
-    notifyuser("Missing scanline","The scanline package is not installed on this computer.");
+    notifyuser("Missing scanline at /usr/local/bin","The scanline package is not installed on this computer.");
+    exit;
+}
+if (!command_exist('/usr/local/bin/detect_blank_page.sh')) {
+    notifyuser("Missing detect_blank_page.sh at /usr/local/bin","Missing blank page detection script.");
     exit;
 }
 
