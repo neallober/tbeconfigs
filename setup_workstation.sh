@@ -207,7 +207,7 @@ if [ "$tbesetup" == "y" ]; then
 
   if [ -e /Applications/The\ Business\ Edge.app/Contents/Resources/app.nw/bin/scanimage.php ]; then
     echo "[+] TBE4 found! Patching now..."
-    sudo curl -fsSL http://github.com/neallober/tbeconfigs/blob/master/TBE4/detect_blank_page.sh > /tmp/detect_blank_page.sh
+    sudo curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/TBE4/detect_blank_page.sh > /tmp/detect_blank_page.sh
     sudo chmod 755 /tmp/detect_blank_page.sh
     sudo mv /tmp/detect_blank_page.sh /usr/local/bin/detect_blank_page.sh
     sudo curl -fsSL http://raw.githubusercontent.com/neallober/tbeconfigs/master/TBE4/scanimage.php > /tmp/scanimage.php
